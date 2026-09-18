@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weed Detection & Treatment Solution</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #2c7744;
+            --secondary-color: #5a9e6f;
+            --danger-color: #ff4444;
+            --warning-color: #ffa500;
+            --success-color: #28a745;
+            --light-bg: #f8fff9;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f1f1f1;
+            padding: 0 30px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            border-bottom: 3px solid var(--primary-color);
+            background: white;
+            font-weight: bold;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 40px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .upload-section {
+            text-align: center;
+        }
+
+        .upload-area {
+            border: 3px dashed var(--primary-color);
+            border-radius: 15px;
+            padding: 60px 20px;
+            margin: 20px auto;
+            max-width: 600px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--light-bg);
+        }
+
+        .upload-area:hover {
+            background: #f0fff0;
+            border-color: #1e5c32;
+        }
+
+        .upload-placeholder .upload-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .upload-placeholder p {
+            font-size: 1.3em;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        #previewImage {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: 10px;
+        }
+
+        .detect-btn {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .detect-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(44, 119, 68, 0.3);
+        }
+
+        .detect-btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .results-section {
+            padding: 40px;
+            background: #f8f9fa;
+        }
+
+        .results-section h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--primary-color);
+        }
+
+        .results-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        .result-image {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .result-image canvas {
+            max-width: 100%;
+            border-radius: 10px;
+        }
+
+        .result-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .stat-card h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--light-bg);
+            padding-bottom: 10px;
+        }
+
+        .percent {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-align: center;
+            display: block;
+        }
+
+        .treatment-section {
+            margin-top: 30px;
+        }
+
+        .treatment-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+
+        .medicine-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .medicine-card {
+            background: var(--light-bg);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .medicine-name {
+            font-weight: bold;
+            color: var(--primary-color);
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .medicine-price {
+            color: var(--danger-color);
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .medicine-details {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .treatment-method {
+            margin-top: 15px;
+            padding: 15px;
+            background: #fff9e6;
+            border-radius: 8px;
+            border-left: 4px solid var(--warning-color);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        .weed-type-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e6f7ff;
+            border-radius: 8px;
+            border-left: 4px solid #1890ff;
+        }
+
+        .action-plan {
+            margin-top: 20px;
+        }
+
+        .action-list {
+            padding-left: 20px;
+            margin-top: 10px;
+        }
+
+        .action-list li {
+            margin-bottom: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .results-container {
+                grid-template-columns: 1fr;
+            }
+            
+            header h1 {
+                font-size: 2em;
+            }
+            
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+
+            .tabs {
+                flex-direction: column;
+                padding: 0;
+            }
+
+            .tab {
+                text-align: center;
+                border-bottom: 1px solid #ddd;
+            }
+
+            .medicine-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌿 Weed Detection & Treatment Solution</h1>
+            <p>AI-powered weed detection with complete treatment solutions, medicine recommendations and pricing</p>
+        </header>
+
+        <div class="tabs">
+            <div class="tab active" data-tab="detection">Weed Detection</div>
+            <div class="tab" data-tab="treatment">Treatment Guide</div>
+            <div class="tab" data-tab="medicine">Medicine Database</div>
+        </div>
+
+        <div class="tab-content active" id="detection-tab">
+            <div class="upload-section">
+                <div class="upload-area" id="uploadArea">
+                    <input type="file" id="imageInput" accept="image/*" hidden>
+                    <div class="upload-placeholder">
+                        <span class="upload-icon">📁</span>
+                        <p>Click to upload crop field image</p>
+                        <small>Supports: JPG, PNG, JPEG | Drone, Mobile, Field Camera</small>
+                    </div>
+                    <img id="previewImage" style="display: none;">
+                </div>
+                
+                <button id="detectBtn" class="detect-btn" disabled>Detect Weeds & Get Solution</button>
+            </div>
+
+            <div class="results-section" id="resultsSection" style="display: none;">
+                <h2>Weed Detection Results & Treatment Plan</h2>
+                <div class="results-container">
+                    <div class="result-item">
+                        <div class="result-image">
+                            <canvas id="resultCanvas"></canvas>
+                        </div>
+                    </div>
+                    <div class="result-stats">
+                        <div class="stat-card">
+                            <h3>Field Analysis</h3>
+                            <span id="weedPercent" class="percent">0%</span>
+                            <p style="text-align: center; margin-top: 10px;">Weed Infestation</p>
+                            
+                            <div class="weed-type-info">
+                                <h4>Detected Weed Types:</h4>
+                                <div id="weedTypes">
+                                    <!-- Weed types will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <h3>Treatment Recommendation</h3>
+                            <div id="recommendationText">
+                                <!-- Recommendation will be populated here -->
+                            </div>
+                            
+                            <div class="action-plan">
+                                <h4>Action Plan:</h4>
+                                <ul class="action-list" id="actionList">
+                                    <!-- Action items will be populated here -->
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="treatment-section">
+                    <div class="treatment-card">
+                        <h3>🔬 Recommended Medicines & Solutions</h3>
+                        <div class="medicine-grid" id="medicineGrid">
+                            <!-- Medicine cards will be populated here -->
+                        </div>
+                        
+                        <div class="treatment-method">
+                            <h4>🧪 Application Method:</h4>
+                            <p id="applicationMethod">Detailed application instructions will appear here based on detected weed types.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="loading" id="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Analyzing image and generating treatment plan...</p>
+                <p><small>Identifying weed types and recommending solutions</small></p>
+            </div>
+        </div>
+
+        <div class="tab-content" id="treatment-tab">
+            <h2>Weed Treatment Guide</h2>
+            <div class="results-container">
+                <div class="stat-card">
+                    <h3>Weed Types & Identification</h3>
+                    <div class="weed-type-info">
+                        <h4>Common Weed Types in India:</h4>
+                        <ul class="action-list">
+                            <li><strong>Grassy Weeds:</strong> Gulli Danda, Jangli Jowar</li>
+                            <li><strong>Broadleaf Weeds:</strong> Bathua, Chulai, Kulfa</li>
+                            <li><strong>Sedges:</strong> Motha, Deela</li>
+                            <li><strong>Parasitic Weeds:</strong> Amarbel</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <h3>Treatment Methods</h3>
+                    <div class="treatment-method">
+                        <h4>Chemical Control:</h4>
+                        <ul class="action-list">
+                            <li>Pre-emergence herbicides</li>
+                            <li>Post-emergence selective herbicides</li>
+                            <li>Systemic herbicides for perennial weeds</li>
+                        </ul>
+                        
+                        <h4 style="margin-top: 15px;">Organic Methods:</h4>
+                        <ul class="action-list">
+                            <li>Mulching with organic materials</li>
+                            <li>Manual weeding</li>
+                            <li>Crop rotation</li>
+                            <li>Bio-herbicides</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="medicine-tab">
+            <h2>Medicine Database</h2>
+            <div class="medicine-grid">
+                <div class="medicine-card">
+                    <div class="medicine-name">Glyphosate 41% SL</div>
+                    <div class="medicine-price">₹450 - ₹600 per liter</div>
+                    <div class="medicine-details">
+                        <strong>Target:</strong> All types of weeds<br>
+                        <strong>Dosage:</strong> 2-3 ml per liter of water<br>
+                        <strong>Waiting Period:</strong> 7-10 days
+                    </div>
+                </div>
+                
+                <div class="medicine-card">
+                    <div class="medicine-name">Pendimethalin 30% EC</div>
+                    <div class="medicine-price">₹350 - ₹500 per liter</div>
+                    <div class="medicine-details">
+                        <strong>Target:</strong> Grassy weeds<br>
+                        <strong>Dosage:</strong> 3-4 ml per liter of water<br>
+                        <strong>Waiting Period:</strong> 5-7 days
+                    </div>
+                </div>
+                
+                <div class="medicine-card">
+                    <div class="medicine-name">2,4-D Amine Salt 58% SL</div>
+                    <div class="medicine-price">₹400 - ₹550 per liter</div>
+                    <div class="medicine-details">
+                        <strong>Target:</strong> Broadleaf weeds<br>
+                        <strong>Dosage:</strong> 2-2.5 ml per liter of water<br>
+                        <strong>Waiting Period:</strong> 10-15 days
+                    </div>
+                </div>
+                
+                <div class="medicine-card">
+                    <div class="medicine-name">Metsulfuron Methyl 20% WP</div>
+                    <div class="medicine-price">₹600 - ₹800 per 100g</div>
+                    <div class="medicine-details">
+                        <strong>Target:</strong> Sedges and broadleaf weeds<br>
+                        <strong>Dosage:</strong> 4g per acre<br>
+                        <strong>Waiting Period:</strong> 15-20 days
+                    </div>
+                </div>
+                
+                <div class="medicine-card">
+                    <div class="medicine-name">Organic Weedicide (Neem-based)</div>
+                    <div class="medicine-price">₹200 - ₹300 per liter</div>
+                    <div class="medicine-details">
+                        <strong>Target:</strong> Mild weed infestation<br>
+                        <strong>Dosage:</strong> 5-10 ml per liter of water<br>
+                        <strong>Waiting Period:</strong> 1-2 days
+                    </div>
+                </div>
+                
+                <div class="medicine-card">
+                    <div class="medicine-name">Paraquat 24% SL</div>
+                    <div class="medicine-price">₹500 - ₹700 per liter</div>
+                    <div class="medicine-details">
+                        <strong>Target:</strong> Contact action on all weeds<br>
+                        <strong>Dosage:</strong> 4-5 ml per liter of water<br>
+                        <strong>Waiting Period:</strong> 3-5 days
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class WeedDetector {
+            constructor() {
+                this.weedDatabase = {
+                    medicines: [
+                        {
+                            name: "Glyphosate 41% SL",
+                            price: "₹450 - ₹600 per liter",
+                            target: "All types of weeds",
+                            dosage: "2-3 ml per liter of water",
+                            waitingPeriod: "7-10 days",
+                            type: "broad_spectrum"
+                        },
+                        {
+                            name: "Pendimethalin 30% EC",
+                            price: "₹350 - ₹500 per liter",
+                            target: "Grassy weeds",
+                            dosage: "3-4 ml per liter of water",
+                            waitingPeriod: "5-7 days",
+                            type: "grassy_weeds"
+                        },
+                        {
+                            name: "2,4-D Amine Salt 58% SL",
+                            price: "₹400 - ₹550 per liter",
+                            target: "Broadleaf weeds",
+                            dosage: "2-2.5 ml per liter of water",
+                            waitingPeriod: "10-15 days",
+                            type: "broadleaf"
+                        },
+                        {
+                            name: "Metsulfuron Methyl 20% WP",
+                            price: "₹600 - ₹800 per 100g",
+                            target: "Sedges and broadleaf weeds",
+                            dosage: "4g per acre",
+                            waitingPeriod: "15-20 days",
+                            type: "sedges"
+                        },
+                        {
+                            name: "Organic Weedicide (Neem-based)",
+                            price: "₹200 - ₹300 per liter",
+                            target: "Mild weed infestation",
+                            dosage: "5-10 ml per liter of water",
+                            waitingPeriod: "1-2 days",
+                            type: "organic"
+                        }
+                    ],
+                    weedTypes: [
+                        { name: "Grassy Weeds", examples: "Gulli Danda, Jangli Jowar", control: "Pendimethalin" },
+                        { name: "Broadleaf Weeds", examples: "Bathua, Chulai, Kulfa", control: "2,4-D" },
+                        { name: "Sedges", examples: "Motha, Deela", control: "Metsulfuron" },
+                        { name: "Mixed Infestation", examples: "Multiple weed types", control: "Glyphosate" }
+                    ]
+                };
+                this.initializeEventListeners();
+            }
+
+            initializeEventListeners() {
+                const uploadArea = document.getElementById('uploadArea');
+                const imageInput = document.getElementById('imageInput');
+                const detectBtn = document.getElementById('detectBtn');
+                const tabs = document.querySelectorAll('.tab');
+
+                // Upload area click handler
+                uploadArea.addEventListener('click', () => {
+                    imageInput.click();
+                });
+
+                // Image input change handler
+                imageInput.addEventListener('change', (e) => {
+                    this.handleImageUpload(e);
+                });
+
+                // Detect button click handler
+                detectBtn.addEventListener('click', () => {
+                    this.detectWeeds();
+                });
+
+                // Tab switching
+                tabs.forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        const tabId = tab.getAttribute('data-tab');
+                        this.switchTab(tabId);
+                    });
+                });
+
+                // Drag and drop functionality
+                uploadArea.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    uploadArea.style.background = '#e8ffe8';
+                });
+
+                uploadArea.addEventListener('dragleave', () => {
+                    uploadArea.style.background = 'var(--light-bg)';
+                });
+
+                uploadArea.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    uploadArea.style.background = 'var(--light-bg)';
+                    
+                    if (e.dataTransfer.files.length) {
+                        imageInput.files = e.dataTransfer.files;
+                        this.handleImageUpload(e);
+                    }
+                });
+            }
+
+            switchTab(tabId) {
+                // Update tabs
+                document.querySelectorAll('.tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                document.querySelector(`.tab[data-tab="${tabId}"]`).classList.add('active');
+                
+                // Update tab content
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById(`${tabId}-tab`).classList.add('active');
+            }
+
+            handleImageUpload(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const previewImage = document.getElementById('previewImage');
+                const uploadPlaceholder = document.querySelector('.upload-placeholder');
+                const detectBtn = document.getElementById('detectBtn');
+
+                const reader = new FileReader();
+                
+                reader.onload = (e) => {
+                    previewImage.src = e.target.result;
+                    previewImage.style.display = 'block';
+                    uploadPlaceholder.style.display = 'none';
+                    detectBtn.disabled = false;
+                };
+
+                reader.readAsDataURL(file);
+            }
+
+            async detectWeeds() {
+                const previewImage = document.getElementById('previewImage');
+                const detectBtn = document.getElementById('detectBtn');
+                const loading = document.getElementById('loading');
+                const resultsSection = document.getElementById('resultsSection');
+
+                // Show loading
+                detectBtn.disabled = true;
+                loading.style.display = 'block';
+                resultsSection.style.display = 'none';
+
+                try {
+                    // Simulate ML processing
+                    await this.simulateMLProcessing(previewImage);
+                    
+                    // Show results
+                    resultsSection.style.display = 'block';
+                    
+                } catch (error) {
+                    console.error('Detection error:', error);
+                    alert('Error detecting weeds. Please try again.');
+                } finally {
+                    loading.style.display = 'none';
+                    detectBtn.disabled = false;
+                }
+            }
+
+            async simulateMLProcessing(image) {
+                // Simulate API call delay
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+                const canvas = document.getElementById('resultCanvas');
+                const ctx = canvas.getContext('2d');
+
+                // Set canvas size to match image
+                canvas.width = image.width;
+                canvas.height = image.height;
+
+                // Draw original image
+                ctx.drawImage(image, 0, 0);
+
+                // Simulate weed detection
+                this.drawSimulatedWeeds(ctx, canvas.width, canvas.height);
+
+                // Update treatment recommendations
+                this.updateTreatmentPlan();
+            }
+
+            drawSimulatedWeeds(ctx, width, height) {
+                const weedCount = Math.floor(Math.random() * 15) + 5;
+                
+                for (let i = 0; i < weedCount; i++) {
+                    const x = Math.random() * (width - 50);
+                    const y = Math.random() * (height - 50);
+                    const w = Math.random() * 100 + 20;
+                    const h = Math.random() * 100 + 20;
+
+                    // Draw weed bounding box
+                    ctx.strokeStyle = '#ff4444';
+                    ctx.lineWidth = 3;
+                    ctx.strokeRect(x, y, w, h);
+
+                    // Fill with semi-transparent color
+                    ctx.fillStyle = 'rgba(255, 68, 68, 0.2)';
+                    ctx.fillRect(x, y, w, h);
+
+                    // Label
+                    ctx.fillStyle = '#ff4444';
+                    ctx.font = '14px Arial';
+                    ctx.fillText('Weed', x, y - 5);
+                }
+            }
+
+            updateTreatmentPlan() {
+                const weedPercent = (Math.random() * 40 + 5).toFixed(1);
+                document.getElementById('weedPercent').textContent = `${weedPercent}%`;
+
+                // Determine weed types based on percentage
+                const detectedWeedTypes = this.determineWeedTypes(weedPercent);
+                this.displayWeedTypes(detectedWeedTypes);
+                
+                // Generate recommendations
+                this.generateRecommendations(weedPercent, detectedWeedTypes);
+                
+                // Show recommended medicines
+                this.displayMedicines(detectedWeedTypes, weedPercent);
+            }
+
+            determineWeedTypes(weedPercent) {
+                const types = [];
+                if (weedPercent > 25) {
+                    types.push('Mixed Infestation');
+                }
+                if (weedPercent > 15) {
+                    types.push('Grassy Weeds');
+                    types.push('Broadleaf Weeds');
+                } else {
+                    types.push('Grassy Weeds');
+                }
+                if (weedPercent > 20) {
+                    types.push('Sedges');
+                }
+                return types;
+            }
+
+            displayWeedTypes(weedTypes) {
+                const weedTypesContainer = document.getElementById('weedTypes');
+                weedTypesContainer.innerHTML = '';
+                
+                weedTypes.forEach(type => {
+                    const weedInfo = this.weedDatabase.weedTypes.find(w => w.name === type);
+                    if (weedInfo) {
+                        const div = document.createElement('div');
+                        div.style.marginBottom = '10px';
+                        div.style.padding = '8px';
+                        div.style.background = '#f0f8ff';
+                        div.style.borderRadius = '5px';
+                        div.innerHTML = `
+                            <strong>${weedInfo.name}</strong><br>
+                            <small>Examples: ${weedInfo.examples}</small>
+                        `;
+                        weedTypesContainer.appendChild(div);
+                    }
+                });
+            }
+
+            generateRecommendations(weedPercent, weedTypes) {
+                const recommendation = document.getElementById('recommendationText');
+                const actionList = document.getElementById('actionList');
+                const applicationMethod = document.getElementById('applicationMethod');
+
+                let recommendationText = '';
+                let actions = [];
+                let application = '';
+
+                if (weedPercent > 30) {
+                    recommendationText = '🚨 <strong style="color: #ff4444;">High weed density detected!</strong> Immediate chemical control required.';
+                    actions = [
+                        'Apply broad-spectrum herbicide within 2-3 days',
+                        'Use systemic herbicides for complete control',
+                        'Repeat application after 15 days if needed',
+                        'Monitor field weekly for new weed growth',
+                        'Consider soil testing for nutrient management'
+                    ];
+                    application = 'Mix recommended herbicide in water as per dosage. Spray uniformly across the field during early morning or late evening. Avoid spraying during windy conditions. Use proper protective equipment.';
+                } else if (weedPercent > 15) {
+                    recommendationText = '⚠️ <strong style="color: #ffa500;">Moderate weed presence detected.</strong> Timely intervention recommended.';
+                    actions = [
+                        'Apply selective herbicides based on weed types',
+                        'Combine chemical and manual methods',
+                        'Monitor field every 2 weeks',
+                        'Consider organic options for partial control',
+                        'Maintain proper irrigation schedule'
+                    ];
+                    application = 'Select appropriate herbicides based on detected weed types. Apply as directed dosage. For mixed infestation, use combination of herbicides. Spray when weeds are in active growth stage.';
+                } else {
+                    recommendationText = '✅ <strong style="color: #2c7744;">Low weed presence detected.</strong> Preventive measures sufficient.';
+                    actions = [
+                        'Manual removal of visible weeds',
+                        'Use organic weedicides if needed',
+                        'Regular monitoring recommended',
+                        'Practice crop rotation',
+                        'Use mulch to suppress weed growth'
+                    ];
+                    application = 'For low infestation, prefer manual weeding or organic herbicides. If using chemicals, spot application is sufficient. Maintain field hygiene to prevent future infestation.';
+                }
+
+                recommendation.innerHTML = recommendationText;
+                
+                actionList.innerHTML = '';
+                actions.forEach(action => {
+                    const li = document.createElement('li');
+                    li.textContent = action;
+                    actionList.appendChild(li);
+                });
+
+                applicationMethod.textContent = application;
+            }
+
+            displayMedicines(weedTypes, weedPercent) {
+                const medicineGrid = document.getElementById('medicineGrid');
+                medicineGrid.innerHTML = '';
+
+                let recommendedMedicines = [];
+
+                if (weedPercent > 25) {
+                    // High infestation - recommend broad spectrum
+                    recommendedMedicines = this.weedDatabase.medicines.filter(m => 
+                        m.type === 'broad_spectrum'
+                    );
+                } else if (weedTypes.includes('Sedges')) {
+                    // Sedges present
+                    recommendedMedicines = this.weedDatabase.medicines.filter(m => 
+                        m.type === 'sedges' || m.type === 'broad_spectrum'
+                    );
+                } else if (weedTypes.includes('Broadleaf Weeds')) {
+                    // Broadleaf weeds
+                    recommendedMedicines = this.weedDatabase.medicines.filter(m => 
+                        m.type === 'broadleaf' || m.type === 'broad_spectrum'
+                    );
+                } else {
+                    // Grassy weeds or low infestation
+                    recommendedMedicines = this.weedDatabase.medicines.filter(m => 
+                        m.type === 'grassy_weeds' || m.type === 'organic'
+                    );
+                }
+
+                // Limit to 3 most relevant medicines
+                recommendedMedicines.slice(0, 3).forEach(medicine => {
+                    const card = document.createElement('div');
+                    card.className = 'medicine-card';
+                    card.innerHTML = `
+                        <div class="medicine-name">${medicine.name}</div>
+                        <div class="medicine-price">${medicine.price}</div>
+                        <div class="medicine-details">
+                            <strong>Target:</strong> ${medicine.target}<br>
+                            <strong>Dosage:</strong> ${medicine.dosage}<br>
+                            <strong>Waiting Period:</strong> ${medicine.waitingPeriod}
+                        </div>
+                    `;
+                    medicineGrid.appendChild(card);
+                });
+            }
+        }
+
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new WeedDetector();
+        });
+    </script>
+</body>
+</html>
